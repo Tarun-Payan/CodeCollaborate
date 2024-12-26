@@ -4,6 +4,7 @@ import { generateJWTToken } from "../utils/generateJWTToken.js";
 import { sendEmailVarificationEmail, sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendWelcomeEmail } from "../mailtrap/emails.js"
 import { TempUser } from "../model/tempUser.model.js";
 import crypto from "crypto";
+import { getFileUrl, uploadObjectUrl, deleteS3BucketObject } from "../aws/awsFunctions.js";
 
 export const signup = async (req, res) => {
     try {
@@ -42,7 +43,13 @@ export const signup = async (req, res) => {
         // generate new token
         const token = generateJWTToken(res, user._id)
 
-        res.status(200).json({ success: true, message: "Successfully created account" })
+        res.status(200).json({
+            success: true, message: "Successfully created account",
+            user: {
+                ...user._doc,
+                password: undefined
+            }
+        })
     } catch (error) {
         res.status(400).json({ success: false, message: error.message })
     }
@@ -197,7 +204,7 @@ export const checkAuth = async (req, res) => {
     try {
         const user = await User.findById(req.userId).select("-password");
         if (!user) {
-            res.status(400).json({ success: false, message: "User not found" })
+            return res.status(400).json({ success: false, message: "User not found" })
         }
 
         res.status(200).json({ success: true, user })
@@ -231,4 +238,61 @@ export const checkUsername = async (req, res) => {
     } catch (error) {
         res.status(400).json({ success: false, message: error })
     }
+}
+
+export const getimageurl = async (req, res) => {
+    const { key } = req.query;
+
+    const url = await getFileUrl(key);
+
+    if (url !== null) return res.status(200).json({ success: true, url })
+
+    res.status(400).json({ success: false, message: "Error in generating url to getObject" })
+}
+
+export const getUploadObjectUrl = async (req, res) => {
+    const { contentType, key } = req.query;
+    const key2 = `${key}/image-${Date.now()}`
+
+    const url = await uploadObjectUrl(contentType, key2)
+
+    if (url !== null) return res.status(200).json({ success: true, url, key: key2 })
+
+    res.status(400).json({ success: false, message: "Error in generating url to uploadObject" })
+}
+
+export const updateProfile = async (req, res) => {
+    const { name, bio, profilePicture } = req.body;
+
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" })
+
+        if (profilePicture == null && user.profilePic != '') {
+            // console.log("delete profilePicture")
+            await deleteS3BucketObject(user.profilePic)
+        }
+
+        // delete profile image if profilePicture available
+        if (profilePicture != '' && user.profilePic != '') {
+            // console.log("Delete profilePicture2")
+            await deleteS3BucketObject(user.profilePic)
+        }
+
+        user.name = name
+        user.bio = bio
+        profilePicture == null ? user.profilePic = '' : user.profilePic = profilePicture
+        await user.save()
+        res.status(200).json({ success: true, message: "Profile updated successfully" })
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const isValidUsername = async (req, res) => {
+    const { username } = req.query;
+    const user = await User.findOne({ username }).select("-password");
+    if (!user) return res.status(404).json({ success: false, message: "Username not available"})
+    res.status(200).json({ success: true, message: "Username available", user })
 }

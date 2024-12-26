@@ -9,7 +9,11 @@ import {
     resetPassword,
     checkAuth,
     checkEmail,
-    checkUsername
+    checkUsername,
+    getimageurl,
+    getUploadObjectUrl,
+    updateProfile,
+    isValidUsername
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js"
 
@@ -27,5 +31,11 @@ router.post("/forget-password", forgetPassword)
 router.post("/reset-password", resetPassword)
 router.post("/checkEmail", checkEmail)
 router.post("/checkUsername", checkUsername)
+
+router.get("/getimageurl", getimageurl)
+router.get("/getUploadObjectUrl", getUploadObjectUrl)
+router.post("/update-profile", verifyToken, updateProfile)
+
+router.get("/isvalidusername", isValidUsername)
 
 export default router;

@@ -6,6 +6,7 @@ import PasswordStrengthBar from 'react-password-strength-bar';
 import { useNavigate } from "react-router-dom";
 import PinInput from 'react-pin-input';
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore";
 import LoginSignupOuterComponent from "../components/LoginSignupOuterComponent";
 import LoginSignupInnerComponent from "../components/LoginSignupInnerComponent";
 
@@ -20,6 +21,8 @@ const SignupPage = () => {
     const [username, setUsername] = useState({ data: '', isValid: false, isSubmited: false })
     const [isLoading, setIsLoading] = useState(false)
 
+    const { setAuthUser, setIsAuthenticated, checkAuth } = useAuthStore();
+
     const displayWelcomeTest = () => {
         let index = 0
         const interval = setInterval(() => {
@@ -33,18 +36,10 @@ const SignupPage = () => {
     }
 
     useEffect(() => {
-        ( async () => {
-            try{
-                await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/check-auth`, { withCredentials: true})
-                navigate('/')
-            // eslint-disable-next-line no-unused-vars
-            } catch(error){
-                //console.log(error);
-            }
-        } )();
-        
+        checkAuth(setIsLoading, navigate, '/', '')
+                
         displayWelcomeTest();
-    }, [])
+    }, [checkAuth, navigate])
 
     useEffect(() => {
         if (!email.data) {
@@ -269,7 +264,7 @@ const SignupPage = () => {
                                 try {
                                     await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/varify-email`, { email: email.data, varificationToken: value })
 
-                                    await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/signup`, { email: email.data, username: username.data, password: password.data }, { withCredentials: true })
+                                    const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/signup`, { email: email.data, username: username.data, password: password.data }, { withCredentials: true })
                                     seterror('')
                                     alert("Successfully created account")
                                     navigate("/");

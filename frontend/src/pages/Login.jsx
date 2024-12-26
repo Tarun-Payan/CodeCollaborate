@@ -6,6 +6,7 @@ import { Mail, Lock } from "lucide-react";
 import Input from "../components/Input";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore";
 
 const Login = () => {
     const [isLoading, setIsLoading] = useState(false)
@@ -13,18 +14,11 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, seterror] = useState('')
     const navigate = useNavigate();
+    const { checkAuth } = useAuthStore();
 
     useEffect(() => {
-        ( async () => {
-            try{
-                await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/check-auth`, { withCredentials: true})
-                navigate('/')
-            // eslint-disable-next-line no-unused-vars
-            } catch(error){
-                //console.log(error);
-            }
-        } )();
-    }, [])
+        checkAuth(setIsLoading, navigate, '/', '')
+    }, [checkAuth, navigate])
 
     const handleSubmit = async () => {
         setIsLoading(true)

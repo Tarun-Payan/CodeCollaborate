@@ -17,7 +17,7 @@ const Input = ({ icon: Icon, type, ...props }) => {
             </div>
             <input
                 {...props}
-                type={type === "email" ? 'email' : showPassword ? 'text' : 'password'}
+                type={type !== "password" ? type : showPassword ? 'text' : 'password'}
                 className='w-full pl-10 pr-3 py-2 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 focus:border-green-500  outline-none text-white placeholder-gray-400 transition duration-200'
             />
             {type === "password" && <div className='absolute inset-y-0 right-0 flex items-center pr-3'>
