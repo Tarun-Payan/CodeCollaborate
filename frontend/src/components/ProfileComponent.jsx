@@ -5,7 +5,7 @@ import { UsersRound, Camera } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Loader } from 'lucide-react';
 import axios from 'axios';
-import {useParams} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -22,6 +22,10 @@ const ProfileComponent = () => {
     const [selectedImageFile, setSelectedImageFile] = useState(null)
     const [editData, setEditData] = useState({ name: '', bio: '' })
     const [isLoader, setIsLoader] = useState(false)
+    const [isFollow, setIsFollow] = useState(false)
+    const [followers, setFollowers] = useState(0)
+    const [followings, setFollowings] = useState(0)
+    const [followLoader, setfollowLoader] = useState(false)
 
     const fileInputRef = useRef(null)
 
@@ -29,17 +33,20 @@ const ProfileComponent = () => {
         if (isAuthenticated) {
             setEditData({ name: selectedUser?.name, bio: selectedUser?.bio })
             console.log(username)
-            if(!username) setSelectedUser(authUser)
+            if (!username) setSelectedUser(authUser)
         }
     }, [isAuthenticated, selectedUser, authUser])
 
-    // useEffect(() => {
-    //     if(isAuthenticated && selectedUser == null){
-    //         console.log("Selected User", selectedUser)
-    //         setSelectedUser(authUser)
-    //     }
-    // }, [authUser, isAuthenticated, selectedUser, setSelectedUser])
-    
+    useEffect(() => {
+        if (isAuthenticated && selectedUser != null) {
+            if (selectedUser.username != authUser.username) {
+                setIsFollow(authUser.following.includes(selectedUser._id))
+            }
+            setFollowers(selectedUser.followers.length)
+            setFollowings(selectedUser.following.length)
+        }
+    }, [selectedUser])
+
 
     const handleUploadImage = (e) => {
         // console.log(selectedImage)
@@ -80,19 +87,35 @@ const ProfileComponent = () => {
             }
 
             // if selectedImage is remove means that user want to remove profile image
-            if(selectedImage == "remove"){
+            if (selectedImage == "remove") {
                 key = null
             }
 
             const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/update-profile`, { name: editData.name, bio: editData.bio, profilePicture: key }, { withCredentials: true })
 
-            if(key == null) key = ''
+            if (key == null) key = ''
             updateAuthUser(editData.name, editData.bio, key)
         } catch (error) {
             console.log(error)
         } finally {
             setIsLoader(false)
             setIsEdit(false)
+        }
+    }
+
+    const followUnfollow = async () => {
+        try {
+            setfollowLoader(true)
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/follow-unfollow`, { followId: selectedUser._id }, { withCredentials: true })
+            setIsFollow(!isFollow)
+
+            const response2 = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/stat`, { params: { userId: selectedUser._id } })
+            setFollowers(response2.data.followerCount)
+            setFollowings(response2.data.followingCount)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setfollowLoader(false)
         }
     }
 
@@ -158,26 +181,33 @@ const ProfileComponent = () => {
                     >
                         Edit Profile
                     </motion.button>
-                    :
-                    // follow button
-                    <motion.button
-                        className="bg-[#d2d3d3b0] py-[5px] text-sm px-4 rounded-md font-sans w-full mb-3"
-                        whileHover={{
-                            scale: 1.03
-                        }}
-                        whileTap={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                        // onClick={() => setIsEdit(true)}
-                    >
-                        Follow
-                    </motion.button>}
+                        :
+                        // follow button
+                        <motion.button
+                            className="bg-[#d2d3d3b0] py-[5px] text-sm px-4 rounded-md font-sans w-full mb-3"
+                            whileHover={{
+                                scale: 1.03
+                            }}
+                            whileTap={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            onClick={() => followUnfollow()}
+                            disabled={followLoader}
+                        >
+                            {followLoader ?
+                                <div className='flex items-center justify-center gap-1'>
+                                    <Loader size={14} strokeWidth={1.75} />
+                                    <span>Loading...</span>
+                                </div> :
+                                <span>{isFollow ? "Unfollow" : "Follow"}</span>
+                            }
+                        </motion.button>}
 
                     <div className='flex gap-1 text-sm text-gray-700'>
                         <span className='group flex items-center gap-1 hover:text-blue-800 cursor-pointer' >
                             <UsersRound size={14} strokeWidth={1.75} />
-                            <span><span className='text-black group-hover:text-inherit font-semibold'>0</span> followers </span>
+                            <span><span className='text-black group-hover:text-inherit font-semibold'>{followers}</span> followers </span>
                         </span>
-                        · <span className='group cursor-pointer hover:text-blue-800'><span className='text-black group-hover:text-inherit font-semibold'>3</span> following</span>
+                        · <span className='group cursor-pointer hover:text-blue-800'><span className='text-black group-hover:text-inherit font-semibold'>{followings}</span> following</span>
                     </div>
                 </div>
                 :

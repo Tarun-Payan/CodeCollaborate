@@ -293,6 +293,45 @@ export const updateProfile = async (req, res) => {
 export const isValidUsername = async (req, res) => {
     const { username } = req.query;
     const user = await User.findOne({ username }).select("-password");
-    if (!user) return res.status(404).json({ success: false, message: "Username not available"})
+    if (!user) return res.status(404).json({ success: false, message: "Username not available" })
     res.status(200).json({ success: true, message: "Username available", user })
+}
+
+export const followUnfollow = async (req, res) => {
+    try {
+        const { followId } = req.body;
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        const followUser = await User.findById(followId);
+
+        if (!user.following.includes(followId)) {
+            // follow
+            user.following.push(followId)
+            followUser.followers.push(userId)
+            await user.save()
+            await followUser.save()
+            res.status(200).json({ success: true, message: "User followed successfully" })
+        } else {
+            // unfollow
+            user.following.pull(followId)
+            followUser.followers.pull(userId)
+            await user.save()
+            await followUser.save()
+            res.status(200).json({ success: true, message: "User unfollowed successfully" })
+        }
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const userStat = (req, res) => {
+    const { userId } = req.query;
+    User.findById(userId).then(user => {
+        const followerCount = user.followers.length;
+        const followingCount = user.following.length;
+
+        res.status(200).json({ followerCount, followingCount });
+    }).catch(error => {
+        res.status(400).json({ success: false, message: error.message })
+    })
 }

@@ -13,7 +13,9 @@ import {
     getimageurl,
     getUploadObjectUrl,
     updateProfile,
-    isValidUsername
+    isValidUsername,
+    followUnfollow,
+    userStat
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js"
 
@@ -37,5 +39,7 @@ router.get("/getUploadObjectUrl", getUploadObjectUrl)
 router.post("/update-profile", verifyToken, updateProfile)
 
 router.get("/isvalidusername", isValidUsername)
+router.post("/users/follow-unfollow", verifyToken, followUnfollow)
+router.get("/users/stat", userStat)
 
 export default router;
