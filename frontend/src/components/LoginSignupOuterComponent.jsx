@@ -1,7 +1,8 @@
 import { motion } from "motion/react"
 import ReactLoading from 'react-loading';
+import LoginSignupNavbar from "./LoginSignupNavbar";
 
-const LoginSignupOuterComponent = ({children, isLoading}) => {
+const LoginSignupOuterComponent = ({children, isLoading, type}) => {
   return (
     <>
         {isLoading && 
@@ -14,12 +15,15 @@ const LoginSignupOuterComponent = ({children, isLoading}) => {
             />
         }
         <motion.div
-            className={`bg-gradient-to-b from-slate-700 to-zinc-900 min-h-[100vh] min-w-[100vw] flex flex-col justify-center items-center px-3 ${isLoading ? "pointer-events-none" : "pointer-events-auto"}`}
+            className={`bg-gradient-to-b from-slate-700 to-zinc-900 min-h-[100vh] min-w-[100vw] px-3 ${isLoading ? "pointer-events-none" : "pointer-events-auto"}`}
             initial={{ filter: 'blur(0px)' }}
             animate={{ filter: isLoading ? 'blur(1.5px)' : 'blur(0px)' }}
             transition={{ duration: 0.5 }}
         >
-            {children}
+            <LoginSignupNavbar type={type} />
+            <div className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                {children}
+            </div>
         </motion.div>
     </>
   )

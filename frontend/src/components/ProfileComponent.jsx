@@ -13,38 +13,46 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+import FollowUnFollowModal from '../modals/FollowUnFollowModal';
+
 const ProfileComponent = () => {
     const { username } = useParams();
 
-    const { authUser, updateAuthUser, isAuthenticated, profilePicUrl, selectedUser, selectedUserProfilePicUrl, setSelectedUser } = useAuthStore();
+    const { authUser, updateAuthUser, isAuthenticated, selectedUser, selectedUserProfilePicUrl, setSelectedUser, followings, followers, followUnfollow, setFollowersFollowings, updateSelectedUserProfilePicUrl } = useAuthStore();
     const [isEdit, setIsEdit] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
     const [selectedImageFile, setSelectedImageFile] = useState(null)
     const [editData, setEditData] = useState({ name: '', bio: '' })
     const [isLoader, setIsLoader] = useState(false)
     const [isFollow, setIsFollow] = useState(false)
-    const [followers, setFollowers] = useState(0)
-    const [followings, setFollowings] = useState(0)
     const [followLoader, setfollowLoader] = useState(false)
+    const [showFollowersModal, setShowFollowersModal] = useState(false)
+    const [showFollowingModal, setShowFollowingModal] = useState(false)
 
     const fileInputRef = useRef(null)
 
     useEffect(() => {
         if (isAuthenticated) {
             setEditData({ name: selectedUser?.name, bio: selectedUser?.bio })
-            console.log(username)
             if (!username) setSelectedUser(authUser)
         }
-    }, [isAuthenticated, selectedUser, authUser])
+    }, [selectedUser, authUser])
 
     useEffect(() => {
-        if (isAuthenticated && selectedUser != null) {
-            if (selectedUser.username != authUser.username) {
-                setIsFollow(authUser.following.includes(selectedUser._id))
+        (async () => {
+            if (isAuthenticated && selectedUser != null) {
+                if (selectedUser.username != authUser.username) {
+                    try {
+                        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/get-users-follow-unfollow-data`, { params: { followId: selectedUser._id }, withCredentials: true })
+                        setIsFollow(response.data.isFollowed)
+                        console.log(response.data.isFollowed)
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                setFollowersFollowings()
             }
-            setFollowers(selectedUser.followers.length)
-            setFollowings(selectedUser.following.length)
-        }
+        })()
     }, [selectedUser])
 
 
@@ -72,7 +80,7 @@ const ProfileComponent = () => {
         try {
             let key = '';
 
-            if (selectedImageFile) {
+            if (selectedImageFile && selectedImage != "remove") {
                 const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/getUploadObjectUrl`, { params: { contentType: selectedImageFile.type, key: 'profileImage' } })
                 const url = response.data.url
                 key = response.data.key
@@ -94,30 +102,19 @@ const ProfileComponent = () => {
             const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/update-profile`, { name: editData.name, bio: editData.bio, profilePicture: key }, { withCredentials: true })
 
             if (key == null) key = ''
-            updateAuthUser(editData.name, editData.bio, key)
+            await updateAuthUser(editData.name, editData.bio, key)
+            await updateSelectedUserProfilePicUrl(key);
         } catch (error) {
             console.log(error)
         } finally {
+            setSelectedImage(null)
             setIsLoader(false)
             setIsEdit(false)
         }
     }
 
-    const followUnfollow = async () => {
-        try {
-            setfollowLoader(true)
-            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/follow-unfollow`, { followId: selectedUser._id }, { withCredentials: true })
-            setIsFollow(!isFollow)
-
-            const response2 = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/stat`, { params: { userId: selectedUser._id } })
-            setFollowers(response2.data.followerCount)
-            setFollowings(response2.data.followingCount)
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setfollowLoader(false)
-        }
-    }
+    const closeFollowersModal = () => setShowFollowersModal(false);
+    const closeFollowingModal = () => setShowFollowingModal(false);
 
     return (
         <div className='w-fit p-2 flex flex-col gap-3'>
@@ -190,12 +187,12 @@ const ProfileComponent = () => {
                             }}
                             whileTap={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                            onClick={() => followUnfollow()}
+                            onClick={() => followUnfollow(setfollowLoader, setIsFollow, isFollow, selectedUser._id)}
                             disabled={followLoader}
                         >
                             {followLoader ?
                                 <div className='flex items-center justify-center gap-1'>
-                                    <Loader size={14} strokeWidth={1.75} />
+                                    <Loader size={14} strokeWidth={1.75} className='animate-spin' />
                                     <span>Loading...</span>
                                 </div> :
                                 <span>{isFollow ? "Unfollow" : "Follow"}</span>
@@ -205,9 +202,33 @@ const ProfileComponent = () => {
                     <div className='flex gap-1 text-sm text-gray-700'>
                         <span className='group flex items-center gap-1 hover:text-blue-800 cursor-pointer' >
                             <UsersRound size={14} strokeWidth={1.75} />
-                            <span><span className='text-black group-hover:text-inherit font-semibold'>{followers}</span> followers </span>
+                            <span
+                                onClick={() => {
+                                    if (showFollowersModal) setShowFollowingModal(false)
+                                    setShowFollowersModal(true)
+                                    console.log("Show Followers Modal")
+                                }}
+                            >
+                                <span className='text-black group-hover:text-inherit font-semibold'>
+                                    {" "}{followers}{" "}
+                                </span>
+                                followers
+                            </span>
+                            {showFollowersModal && <FollowUnFollowModal type="Followers" closeModal={closeFollowersModal} />}
                         </span>
-                        · <span className='group cursor-pointer hover:text-blue-800'><span className='text-black group-hover:text-inherit font-semibold'>{followings}</span> following</span>
+                        · <span
+                            className='group cursor-pointer hover:text-blue-800'
+                            onClick={() => {
+                                if (showFollowingModal) setShowFollowersModal(false)
+                                setShowFollowingModal(true)
+                            }}
+                        >
+                            <span className='text-black group-hover:text-inherit font-semibold'>
+                                {" "}{followings}{" "}
+                            </span>
+                            following
+                        </span>
+                        {showFollowingModal && <FollowUnFollowModal type="Following" closeModal={closeFollowingModal} />}
                     </div>
                 </div>
                 :
@@ -244,7 +265,7 @@ const ProfileComponent = () => {
                             >
                                 {isLoader ?
                                     <div className='flex items-center gap-1'>
-                                        <Loader size={14} strokeWidth={1.75} />
+                                        <Loader size={14} strokeWidth={1.75} className='animate-spin' />
                                         <span>Loading...</span>
                                     </div> :
                                     <span>Save</span>

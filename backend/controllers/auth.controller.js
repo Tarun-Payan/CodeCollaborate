@@ -82,7 +82,7 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
     try {
-        res.clearCookie('token')
+        res.clearCookie('token');
         res.status(200).json({ success: true, message: "Successfully logout" })
     } catch (error) {
         res.status(400).json({ success: false, message: error.message })
@@ -334,4 +334,72 @@ export const userStat = (req, res) => {
     }).catch(error => {
         res.status(400).json({ success: false, message: error.message })
     })
+}
+
+export const userStatToDisplayFollowersFollowing = async (req, res) => {
+    try {
+        const user = req.userId;
+        const { followId } = req.query;
+
+        const followUser = await User.findById(followId, 'name username profilePic followers');
+
+        if (!followUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Check if the userId exists in the followers array of followUser
+        const isFollowed = followUser.followers.includes(user);
+
+        res.status(200).json({
+            success: true,
+            name: followUser.name,
+            username: followUser.username,
+            profilePic: followUser.profilePic,
+            isFollowed: isFollowed,
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const searchUsers = async (req, res) => {
+    try {
+        const { query } = req.query;
+        const users = await User.find({
+            $or: [{
+                name: {
+                    $regex: query,
+                    $options: 'i'
+                }
+            }, {
+                username: {
+                    $regex: query,
+                    $options: 'i'
+                }
+            }]
+        }).select('name username profilePic')
+        res.status(200).json(users);
+    } catch {
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const getFollowers = async (req, res) => {
+    try {
+        const user = req.params.userId;
+        const followers = await User.findById(user, 'followers');
+        res.status(200).json(followers.followers);
+    } catch(error) {
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const getFollowings = async (req, res) => {
+    try {
+        const user = req.params.userId;
+        const followings = await User.findById(user, 'following');
+        res.status(200).json(followings.following);
+    } catch(error){
+        res.status(400).json({ success: false, message: error.message })
+    }
 }

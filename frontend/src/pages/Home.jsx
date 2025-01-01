@@ -27,7 +27,6 @@ const Home = () => {
           const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/isvalidusername`, { params: { username } })
           setIsValidUsername(true)
           setSelectedUser(response.data.user)
-          console.log("User: ", response.data.user)
         }
       } catch (error) {
         setIsValidUsername(false)

@@ -15,7 +15,11 @@ import {
     updateProfile,
     isValidUsername,
     followUnfollow,
-    userStat
+    userStat,
+    userStatToDisplayFollowersFollowing,
+    searchUsers,
+    getFollowers,
+    getFollowings
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js"
 
@@ -41,5 +45,9 @@ router.post("/update-profile", verifyToken, updateProfile)
 router.get("/isvalidusername", isValidUsername)
 router.post("/users/follow-unfollow", verifyToken, followUnfollow)
 router.get("/users/stat", userStat)
+router.get("/users/get-users-follow-unfollow-data", verifyToken, userStatToDisplayFollowersFollowing)
+router.get("/users/search-users", searchUsers)
+router.get("/users/:userId/followers", getFollowers)
+router.get("/users/:userId/followings", getFollowings)
 
 export default router;

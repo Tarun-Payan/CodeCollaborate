@@ -142,7 +142,7 @@ const SignupPage = () => {
 
     return (
         <>
-            <LoginSignupOuterComponent isLoading={isLoading}>
+            <LoginSignupOuterComponent isLoading={isLoading} type={"signup"}>
                 {!username.isSubmited ?
                     <>
                         <LoginSignupInnerComponent className="py-3 px-4">

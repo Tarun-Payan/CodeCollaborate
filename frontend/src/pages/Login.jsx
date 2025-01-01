@@ -36,7 +36,7 @@ const Login = () => {
     }
 
     return (
-        <LoginSignupOuterComponent isLoading={isLoading}>
+        <LoginSignupOuterComponent isLoading={isLoading} type="login">
             <LoginSignupInnerComponent>
                 <div className="flex flex-col items-start gap-6 py-3 px-4">
                     <motion.p
