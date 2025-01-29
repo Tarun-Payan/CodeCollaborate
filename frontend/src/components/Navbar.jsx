@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom"
 import logo from "../assets/logo.jfif"
 import { Search } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuthStore } from "../store/useAuthStore"
 import NavbarLink from "./NavbarLink"
 import SearchModal from "../modals/SearchModal"
 import NavbarProfileImageCompo from "./NavbarProfileImageCompo"
 
-const Navbar = () => {
+const Navbar = ({ isRepoPage }) => {
     const [search, setsearch] = useState('')
 
     const { isAuthenticated, authUser, selectedUser } = useAuthStore();
@@ -24,7 +24,7 @@ const Navbar = () => {
                             <a href={"/"}><img src={logo} alt="Logo" className="logo w-[35px] h-[35px] rounded-full" /></a>
                         </div>
                         <div className="webName">
-                            <a href="/"><h1 className='font-semibold text-sm'>{isAuthenticated ? authUser.username : ''}</h1></a>
+                            <a href="/"><h1 className='font-semibold text-sm'>{isAuthenticated ? selectedUser?.username : ''}</h1></a>
                         </div>
                     </div>
 
@@ -47,11 +47,20 @@ const Navbar = () => {
                     </div>
                 </div>
 
+                {!isRepoPage?
                 <div className="px-2 text-sm flex gap-2">
                     <NavbarLink NavValue="Profile" navlink={`/${selectedUser?.username}`} />
-                    <NavbarLink NavValue="Repositories" navlink="/repositires" />
-                    <NavbarLink NavValue="Messages" navlink="/messages" />
+                    <NavbarLink NavValue="Repositories" navlink={`/${selectedUser?.username}?tab=repositires`} />
+                    {authUser?.username == selectedUser?.username && <NavbarLink NavValue="Settings" navlink={`/${selectedUser?.username}?tab=settings`} />}
+                    {/* <NavbarLink NavValue="Messages" navlink="/messages" /> */}
                 </div>
+                :
+                <div className="px-2 text-sm flex gap-2">
+                    <NavbarLink NavValue="Code" navlink={`#`} />
+                    <NavbarLink NavValue="Pull requests" navlink="#" />
+                    <NavbarLink NavValue="Settings" navlink="#" />
+                </div>
+                }
             </nav>
         </div>
     )

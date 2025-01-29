@@ -45,7 +45,7 @@ const ProfileComponent = () => {
                     try {
                         const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/users/get-users-follow-unfollow-data`, { params: { followId: selectedUser._id }, withCredentials: true })
                         setIsFollow(response.data.isFollowed)
-                        console.log(response.data.isFollowed)
+                        // console.log(response.data.isFollowed)
                     } catch (error) {
                         console.log(error)
                     }

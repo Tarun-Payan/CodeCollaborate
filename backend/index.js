@@ -1,6 +1,7 @@
 import express from "express"
 import 'dotenv/config'
 import authroutes from "./routes/auth.router.js"
+import reporoutes from "./routes/repo.router.js"
 import {connectDB} from "./db/connectDB.js"
 import cookieParser from "cookie-parser"
 import cors from "cors"
@@ -27,6 +28,9 @@ app.get("/", (req, res) => {
 
 // Route for authorization
 app.use("/api/auth", authroutes)
+
+// Route for repository
+app.use("/api/repo", reporoutes)
 
 app.listen(port, () => {
     connectDB();

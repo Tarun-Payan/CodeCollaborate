@@ -2,23 +2,30 @@
 import { useEffect, useState } from "react"
 import { useAuthStore } from "../store/useAuthStore"
 import { useNavigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
 import ReactLoading from 'react-loading';
-import { motion } from "motion/react";
 import ProfileComponent from "../components/ProfileComponent";
-import {useParams} from 'react-router-dom';
-import axios from "axios";
 import PageNotFound from "./PageNotFound"
+import ProfileShowReposComponent from "../components/ProfileShowReposComponent";
+import Repositories from "../components/Repositories";
+import ProfileSettings from "../components/ProfileSettings";
+
+import { motion } from "motion/react";
+import { useParams, useLocation } from 'react-router-dom';
+import axios from "axios";
 
 const Home = () => {
   const { username } = useParams();
+  const location = useLocation();
 
-  const { authUser, isAuthenticated } = useAuthStore();
+  const [tab, setTab] = useState("");
+
   const [isLoading, setIsLoading] = useState(false)
   const [isValidUsername, setIsValidUsername] = useState(true)
   const navigate = useNavigate();
 
-  const { checkAuth, setSelectedUser } = useAuthStore();
+  const { checkAuth, setSelectedUser, setFollowersFollowings, authUser, selectedUser } = useAuthStore();
 
   useEffect(() => {
     (async () => {
@@ -27,6 +34,7 @@ const Home = () => {
           const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/auth/isvalidusername`, { params: { username } })
           setIsValidUsername(true)
           setSelectedUser(response.data.user)
+          setFollowersFollowings()
         }
       } catch (error) {
         setIsValidUsername(false)
@@ -35,8 +43,19 @@ const Home = () => {
   }, [setSelectedUser, username])
 
   useEffect(() => {
-    checkAuth(setIsLoading, navigate, '', '/signup')
+    checkAuth(setIsLoading, navigate, `${location.pathname}${location.search}`, '/signup')
   }, [checkAuth, navigate])
+
+  useEffect(() => {
+    const url = new URLSearchParams(location.search);
+    const tab = url.get("tab");
+    if (tab) {
+      setTab(tab);
+    } else{
+      setTab('')
+    }
+  }, [location])
+  
 
   if(!isValidUsername && username) return <PageNotFound />
 
@@ -57,13 +76,15 @@ const Home = () => {
         animate={{ filter: isLoading ? 'blur(1.5px)' : 'blur(0px)' }}
         transition={{ duration: 0.5 }}
       >
-        <Navbar />
+        <Navbar isRepoPage={false}/>
         
         <div className="max-w-[1200px] m-auto p-5 flex">
           <ProfileComponent />
 
-          <div className="w-full bg-lime-700">
-            hello
+          <div className="w-full">
+            {tab == "repositires" && <Repositories />}
+            {( tab == "settings" && authUser?.username == selectedUser?.username ) && <ProfileSettings />}
+            {tab == "" && <ProfileShowReposComponent />}
           </div>
         </div>
       </motion.div>

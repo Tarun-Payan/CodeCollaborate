@@ -4,9 +4,9 @@ import SignupPage from "./pages/SignupPage"
 import Login from "./pages/Login"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
-import Repositories from "./pages/Repositories"
 import Messages from "./pages/Messages"
 import PageNotFound from "./pages/PageNotFound"
+import RepoPage from "./pages/RepoPage"
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/repositires" element={<Repositories />} />
+      <Route path="/:username/:reponame" element={<RepoPage />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

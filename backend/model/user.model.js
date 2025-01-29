@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    SSHKey: {
+        type: String,
+        default: ""
+    },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     resetPasswordToken: String,
