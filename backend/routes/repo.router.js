@@ -16,7 +16,8 @@ import {
     getAllUsers,
     getRepoMember,
     getRepoType,
-    changeRepoVisibility
+    changeRepoVisibility,
+    managePins
 } from "../controllers/repo.controller.js"
 
 const router = express.Router();
@@ -37,5 +38,6 @@ router.get('/getAllUsers', getAllUsers)
 router.get('/repoMember', getRepoMember)
 router.get('/getRepoType', getRepoType)
 router.post('/changeRepoVisibility', verifyToken, changeRepoVisibility)
+router.post('/manage-pins', verifyToken, managePins)
 
 export default router;

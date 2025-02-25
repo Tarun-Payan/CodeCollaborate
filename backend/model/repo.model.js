@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     permissions: {
         type: Array,
         default: []
+    },
+    pin: {
+        type: Boolean,
+        default: false
     }
 }, {timestamps: true})
 

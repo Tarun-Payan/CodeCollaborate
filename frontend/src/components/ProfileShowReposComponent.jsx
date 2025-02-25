@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import axios from 'axios';
 import RepoCard from './RepoCard'
+import CustmizeModelPin from '../modals/CustmizeModelPin';
 
 const ProfileShowReposComponent = () => {
-  const { selectedUser } = useAuthStore();
+  const { selectedUser, authUser } = useAuthStore();
 
   const [Repositories, setRepositories] = useState([])
+
+  const [showCustmizePinModal, setShowCustmizePinModal] = useState(false)
+  const closeCustmizePinModal = () => setShowCustmizePinModal(false);
 
   useEffect(() => {
     (async () => {
@@ -20,19 +24,19 @@ const ProfileShowReposComponent = () => {
     })();
   }, [selectedUser])
 
-
   return (
     <>
       <div className='header flex justify-between items-end font-light mb-2'>
         <div className='text-base'>Repositories</div>
-        <div className='text-blue-600 text-xs hover:underline cursor-pointer'>Customize youe pins</div>
+        {authUser?.username == selectedUser?.username && <div className='text-blue-600 text-xs hover:underline cursor-pointer' onClick={() => setShowCustmizePinModal(true)}>Customize your pins</div>}
+        {showCustmizePinModal && <CustmizeModelPin closeModal={closeCustmizePinModal} repositories={Repositories} />}
       </div>
 
 
       {Repositories?.repos?.length > 0 ?
         <div className='grid gap-3 grid-cols-2'>
           {Repositories?.repos.map(repo => {
-              if(repo.type == "Public") return <RepoCard key={repo._id} repo={repo} />
+              if(repo.type == "Public" && repo.pin) return <RepoCard key={repo._id} repo={repo} />
             }
           )}
         </div>

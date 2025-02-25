@@ -369,9 +369,9 @@ export const getReposData = async (req, res) => {
 
         let repos;
         if (suser == user.username) {
-            repos = await Repo.find({ owner: user.username }).select("name owner type description");
+            repos = await Repo.find({ owner: user.username }).select("name owner type description pin");
         } else {
-            const allRepos = await Repo.find({ owner: suser }).select("name owner type description permissions");
+            const allRepos = await Repo.find({ owner: suser }).select("name owner type description permissions pin");
 
             // return all public repos, and return private repos only if user has access to them
             repos = allRepos.filter(repo => {
@@ -388,7 +388,8 @@ export const getReposData = async (req, res) => {
                     name: repo.name,
                     owner: repo.owner,
                     type: repo.type,
-                    description: repo.description
+                    description: repo.description,
+                    pin: repo.pin
                 }
             })
         }
@@ -629,6 +630,19 @@ export const changeRepoVisibility = async (req, res) => {
         await Repo.updateOne({ owner: user.username, name: reponame }, { type: repotype == "Public" ? "Private" : "Public" });
 
         res.status(200).json({ success: true })
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message })
+    }
+}
+
+export const managePins = async (req, res) => {
+    try {
+        const { reponame, pin } = req.body;
+        const user = await User.findById(req.userId).select("username");
+    
+        await Repo.updateOne({ owner: user.username, name: reponame }, { pin: pin })
+
+        res.status(200).json({ success: true, message: "Pin updated successfully" })
     } catch (err) {
         res.status(400).json({ success: false, message: err.message })
     }
