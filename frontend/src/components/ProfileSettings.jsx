@@ -6,7 +6,7 @@ import ReactLoading from 'react-loading';
 import { Loader } from 'lucide-react'
 
 const ProfileSettings = () => {
-  const [sshKey, setSshKey] = useState('asdf')
+  const [sshKey, setSshKey] = useState('')
   const [isEdit, setIsEdit] = useState(false)
   const [editSshKey, setEditSshKey] = useState('')
   const [isLoadingSaveBtn, setIsLoadingSaveBtn] = useState(false)

@@ -11,6 +11,33 @@ export const useAuthStore = create((set, get) => ({
     followings: 0,
     followers: 0,
 
+    editorValue: '',
+    editorLanguage: '',
+    editorFilePath: '',
+    editorLoader: {state: true, label: ''},
+
+    repoPermissions: [],
+    setRepoPermissions: async (reponame) => {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/repo/getReposPermission`, { params: { reponame }, withCredentials: true })
+        set({ repoPermissions: response.data.permissions })
+    },
+
+    setEditorValue: (data) => {
+        set({ editorValue: data })
+    },
+
+    setEditorLanguage: (data) => {
+        set({ editorLanguage: data })
+    },
+
+    setEditorFilePath: (data) => {
+        set({ editorFilePath: data })
+    },
+
+    setEditorLoader: (value) => {
+        set({ editorLoader: value })
+    },
+
     setSelectedUser: async (user) => {
         set({ selectedUser: user })
         get().updateSelectedUserProfilePicUrl(user?.profilePic)

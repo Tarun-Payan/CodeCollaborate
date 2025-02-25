@@ -6,8 +6,10 @@ import { useAuthStore } from "../store/useAuthStore"
 import NavbarLink from "./NavbarLink"
 import SearchModal from "../modals/SearchModal"
 import NavbarProfileImageCompo from "./NavbarProfileImageCompo"
+import { useParams } from "react-router-dom"
 
 const Navbar = ({ isRepoPage }) => {
+    const { username, reponame } = useParams();
     const [search, setsearch] = useState('')
 
     const { isAuthenticated, authUser, selectedUser } = useAuthStore();
@@ -23,8 +25,13 @@ const Navbar = ({ isRepoPage }) => {
                         <div className="logo">
                             <a href={"/"}><img src={logo} alt="Logo" className="logo w-[35px] h-[35px] rounded-full" /></a>
                         </div>
-                        <div className="webName">
-                            <a href="/"><h1 className='font-semibold text-sm'>{isAuthenticated ? selectedUser?.username : ''}</h1></a>
+                        <div className="webName flex font-semibold text-sm">
+                            <a href={`/${selectedUser?.username}`}><span className="px-2 py-1 hover:bg-slate-200 rounded-md">{isAuthenticated ? selectedUser?.username : ''}</span></a>
+                            <a href={`/${selectedUser?.username}/${reponame}`}>
+                                {(isAuthenticated && selectedUser?.username && reponame) && <span>&nbsp;/ 
+                                        <span className="px-2 py-1 hover:bg-slate-200 rounded-md">{reponame}</span>
+                                    </span> }
+                            </a>
                         </div>
                     </div>
 
@@ -56,9 +63,8 @@ const Navbar = ({ isRepoPage }) => {
                 </div>
                 :
                 <div className="px-2 text-sm flex gap-2">
-                    <NavbarLink NavValue="Code" navlink={`#`} />
-                    <NavbarLink NavValue="Pull requests" navlink="#" />
-                    <NavbarLink NavValue="Settings" navlink="#" />
+                    <NavbarLink NavValue="Code" navlink={`/${username}/${reponame}`} />
+                    {authUser?.username == selectedUser?.username && <NavbarLink NavValue="Settings" navlink={`/${username}/${reponame}?tab=settings`} />}
                 </div>
                 }
             </nav>

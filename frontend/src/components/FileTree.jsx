@@ -27,6 +27,10 @@ import { TreeItem2DragAndDropOverlay } from '@mui/x-tree-view/TreeItem2DragAndDr
 
 import { useTreeViewApiRef } from '@mui/x-tree-view/hooks';
 
+import { useAuthStore } from '../store/useAuthStore'
+import axios from 'axios';
+import { Loader } from 'lucide-react';
+
 const ITEMS = [
     {
         id: '1',
@@ -72,6 +76,41 @@ const ITEMS = [
     { id: '3', label: 'History', fileType: 'folder' },
     { id: '4', label: 'Trash', fileType: 'trash' },
 ];
+
+const getFileType = (fileName) => {
+    const extension = fileName.split(".").pop().toLowerCase(); // Extract file extension
+
+    const fileTypes = {
+        js: "javascript",
+        jsx: "javascript",
+        ts: "typescript",
+        tsx: "typescript",
+        json: "json",
+        html: "html",
+        css: "css",
+        scss: "scss",
+        less: "less",
+        xml: "xml",
+        yaml: "yaml",
+        yml: "yaml",
+        md: "markdown",
+        py: "python",
+        java: "java",
+        c: "c",
+        cpp: "cpp",
+        cs: "csharp",
+        php: "php",
+        rb: "ruby",
+        go: "go",
+        swift: "swift",
+        kt: "kotlin",
+        rs: "rust",
+        sh: "shell",
+        sql: "sql",
+    };
+
+    return fileTypes[extension] || "Unknown File Type"; // Default fallback
+};
 
 function DotIcon() {
     return (
@@ -150,7 +189,7 @@ const StyledTreeItemLabelText = styled(Typography)({
     fontWeight: 500,
 });
 
-function CustomLabel({ icon: Icon, expandable, fileType, itemId, publicAPI, children, ...other }) {
+function CustomLabel({ icon: Icon, expandable, fileType, itemId, publicAPI, link, children, ...other }) {
 
     const getPath = (itemId) => {
         let path = [];
@@ -163,12 +202,35 @@ function CustomLabel({ icon: Icon, expandable, fileType, itemId, publicAPI, chil
         return path.join('/');
     }
 
-    const handleFileClick = () => {
+    const { setEditorValue, setEditorLanguage, setEditorFilePath, setEditorLoader, editorLoader } = useAuthStore();
+
+    const handleFileClick = async () => {
         if (fileType === 'folder') return;
-        console.log("children", children);
-        console.log("Item Id: ", itemId);
-        console.log("File type: ", fileType);
-        console.log("Path: ", getPath(itemId))
+        // console.log("children", children);
+        // console.log("Item Id: ", itemId);
+        // console.log("File type: ", fileType);
+        // console.log("Path: ", getPath(itemId))
+        // console.log("Link: ", link)
+        // console.log(editorValue)
+
+        try {
+            setEditorLoader({state: true, label: children})
+            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/repo/getFileRawData`, { params: { link: link } });
+
+            if (children.endsWith('.json')) {
+                setEditorValue(JSON.stringify(response.data.fileData, null, 2))
+            } else {
+                setEditorValue(response.data.fileData)
+            }
+
+            // console.log("File Type: ", getFileType(children))
+            setEditorLanguage(getFileType(children))
+            setEditorFilePath(getPath(itemId))
+        } catch (err) {
+            console.log(err);
+        } finally{
+            setEditorLoader({state: false, label: ''})
+        }
     }
 
     return (
@@ -180,17 +242,25 @@ function CustomLabel({ icon: Icon, expandable, fileType, itemId, publicAPI, chil
             }}
             onClick={handleFileClick}
         >
-            {Icon && (
-                <Box
-                    component={Icon}
-                    className="labelIcon"
-                    color="inherit"
-                    sx={{ mr: 1, fontSize: '1.2rem' }}
-                />
-            )}
+            <div className='flex justify-between w-full'>
+                <div className='flex'>
+                    {Icon && (
+                        <Box
+                            component={Icon}
+                            className="labelIcon"
+                            color="inherit"
+                            sx={{ mr: 1, fontSize: '1.2rem' }}
+                        />
+                    )}
 
-            <StyledTreeItemLabelText variant="body2">{children}</StyledTreeItemLabelText>
-            {expandable && <DotIcon />}
+                    <StyledTreeItemLabelText variant="body2">{children}</StyledTreeItemLabelText>
+                    {expandable && <DotIcon />}
+                </div>
+
+                <div className='text-black'>
+                    {(editorLoader.state && editorLoader.label == children ) && <Loader size={20} strokeWidth={1.75} className='animate-spin' />}
+                </div>
+            </div>
         </TreeItem2Label>
     );
 }
@@ -258,7 +328,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(props, ref) {
                     </TreeItem2IconContainer>
                     <TreeItem2Checkbox {...getCheckboxProps()} />
                     <CustomLabel
-                        {...getLabelProps({ icon, expandable: expandable && status.expanded, fileType: item.fileType, publicAPI, itemId })}
+                        {...getLabelProps({ icon, expandable: expandable && status.expanded, fileType: item.fileType, publicAPI, itemId, link: item.link })}
                     />
                     <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />
                 </CustomTreeItemContent>
@@ -268,12 +338,13 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(props, ref) {
     );
 });
 
-export default function FileExplorer() {
+export default function FileExplorer({ repoTree }) {
+    // console.log("repoTree", repoTree)
     const apiRef = useTreeViewApiRef();
 
     return (
         <RichTreeView
-            items={ITEMS}
+            items={repoTree}
             apiRef={apiRef}
             // defaultExpandedItems={['1', '1.1']}
             sx={{ height: 'fit-content', flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}

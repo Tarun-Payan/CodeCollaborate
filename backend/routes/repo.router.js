@@ -7,7 +7,16 @@ import {
     getReposData, 
     checkRepoName, 
     changeSSHKey,
-    getSshKey
+    getSshKey,
+    verifyReponame,
+    getReposBranches,
+    getRepoRawData,
+    getReposPermission,
+    updateRepoPermission,
+    getAllUsers,
+    getRepoMember,
+    getRepoType,
+    changeRepoVisibility
 } from "../controllers/repo.controller.js"
 
 const router = express.Router();
@@ -19,5 +28,14 @@ router.get('/get-repos-data', verifyToken, getReposData)
 router.get('/checkRepoName', verifyToken, checkRepoName)
 router.post('/changeSSHKey', verifyToken, changeSSHKey)
 router.get('/getSshKey', verifyToken, getSshKey)
+router.get('/isValidReponame', verifyReponame)
+router.get('/get-repos-branches', getReposBranches)
+router.get('/getFileRawData', getRepoRawData)
+router.get('/getReposPermission', verifyToken, getReposPermission)
+router.post('/updateRepoPermission', verifyToken, updateRepoPermission)
+router.get('/getAllUsers', getAllUsers)
+router.get('/repoMember', getRepoMember)
+router.get('/getRepoType', getRepoType)
+router.post('/changeRepoVisibility', verifyToken, changeRepoVisibility)
 
 export default router;

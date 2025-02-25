@@ -5,6 +5,7 @@ import { CalendarPlus2 } from "lucide-react"
 import { motion } from "motion/react"
 import { IoIosGitBranch } from "react-icons/io";
 import CreateRepoModal from '../modals/CreateRepoModal';
+import { Link } from 'react-router-dom';
 
 const Repositories = () => {
   const { selectedUser, authUser } = useAuthStore();
@@ -41,7 +42,7 @@ const Repositories = () => {
         </div>
 
         <div className="pb-14">
-          <p className="repo-name font-semibold text-[#4c4cb9] py-[7px] px-2">{repo.name} <span className="text-xs border rounded-full px-2 py-1 text-blue-500 bg-green-200">{repo.type}</span></p>
+          <p className="repo-name font-semibold text-[#4c4cb9] py-[7px] px-2"><Link to={`/${selectedUser?.username}/${repo.name}`} className="cursor-pointer hover:underline">{repo.name}</Link> <span className="text-xs border rounded-full px-2 py-1 text-blue-500 bg-green-200">{repo.type}</span></p>
           <p className="repo-description px-2 text-sm text-slate-500">{repo.description}</p>
         </div>
       </div>

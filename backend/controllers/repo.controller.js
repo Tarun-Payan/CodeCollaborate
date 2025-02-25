@@ -8,6 +8,7 @@ import { exec } from 'child_process'
 import { User } from "../model/user.model.js"
 import { Repo } from "../model/repo.model.js"
 import { runCommandOnGitServer } from '../aws/awsFunctions.js';
+import { query } from 'express';
 
 const gitoliteConfFilePath = path.join(process.env.GITOLITE_ADMIN_PATH, 'conf/gitolite.conf')
 
@@ -184,16 +185,17 @@ export const getReposFiles = async (req, res) => {
     const username = req.params.username;
     const repo = req.params.repo;
     const branch = req.params.branch;
-    // console.log(username, repo, branch)
+    console.log(username, repo, branch)
 
     try {
-        const url = `http://${process.env.GIT_SERVER_IP}/gitweb/?a=tree&p=${username}/${repo}&h=${branch}`
+        const url = `http://${process.env.GIT_SERVER_IP}/gitweb/?p=${username}/${repo}&h=${branch}&a=tree`
+        console.log(url)
         const fileTree = await generateTree(url, '');
 
         return res.status(200).json({ success: true, filetree: fileTree })
     } catch (error) {
         console.log("error", error.message)
-        return res.status(404).send({ success: false, message: "Fail to get repo data" });
+        return res.status(200).send({ success: true, filetree: [] });
     }
 }
 
@@ -228,8 +230,8 @@ export const createRepo = async (req, res) => {
         const commandsToCreateRepo = [
             `sudo su - git <<EOF`,
             `cd /home/git/repositories/`,
-            `mkdir -p ${user_name.username}/${reponame}`,
-            `cd ${user_name.username}/${reponame}`,
+            `mkdir -p ${user_name.username}/${reponame}.git`,
+            `cd ${user_name.username}/${reponame}.git`,
             `git init --bare`,
             `EOF`,
         ]
@@ -238,7 +240,7 @@ export const createRepo = async (req, res) => {
             `sudo su - git <<EOF`,
             `cd /home/git/repositories/`,
             `cd ${user_name.username}`,
-            `rm -r ${reponame}`,
+            `rm -r ${reponame}.git`,
             `EOF`,
         ]
 
@@ -296,7 +298,7 @@ export const deleteRepo = async (req, res) => {
             `sudo su - git <<EOF`,
             `cd /home/git/repositories/`,
             `cd ${user_name.username}`,
-            `rm -r ${reponame}`,
+            `rm -r ${reponame}.git`,
             `EOF`,
         ]
 
@@ -369,7 +371,26 @@ export const getReposData = async (req, res) => {
         if (suser == user.username) {
             repos = await Repo.find({ owner: user.username }).select("name owner type description");
         } else {
-            repos = await Repo.find({ owner: suser, type: "Public" }).select("name owner type description");
+            const allRepos = await Repo.find({ owner: suser }).select("name owner type description permissions");
+
+            // return all public repos, and return private repos only if user has access to them
+            repos = allRepos.filter(repo => {
+                if(repo.type == "Private"){
+                    return repo.permissions.some(perm => perm.username == suser)
+                }
+                
+                return true
+            });
+
+            // return repos without permissions
+            repos = repos.map(repo => {
+                return {
+                    name: repo.name,
+                    owner: repo.owner,
+                    type: repo.type,
+                    description: repo.description
+                }
+            })
         }
 
         res.status(200).json({ success: true, repos })
@@ -423,5 +444,192 @@ export const getSshKey = async (req, res) => {
         res.status(200).json({ success: true, SSHKey: user.SSHKey })
     } catch (error) {
         res.status(400).json({ success: false, message: error })
+    }
+}
+
+export const verifyReponame = async (req, res) => {
+    try {
+        const { username, reponame } = req.query;
+        const repo = await Repo.findOne({ owner: username, name: reponame });
+
+        if (!repo) {
+            return res.status(400).json({ success: false, message: "Repository name is not valid" });
+        }
+
+        res.status(200).json({ success: true, message: "Repository name is valid" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error });
+    }
+}
+
+export const getReposBranches = async (req, res) => {
+    const username = req.query.username;
+    const repo = req.query.repo;
+    // console.log("getReposData", username, repo)
+
+    try {
+        const gitwebUrl = `http://${process.env.GIT_SERVER_IP}/gitweb/?p=${username}/${repo}.git;a=heads`;
+        // console.log(gitwebUrl)
+
+        // Fetch the HTML content of the page
+        const { data } = await axios.get(gitwebUrl);
+
+        // Load the HTML into Cheerio
+        const $ = cheerio.load(data);
+        let branches = [];
+
+        // Extract branch names from Gitweb's HTML structure
+        const rows = $('table.heads tr').toArray(); // Convert Cheerio object to array for iteration
+
+        for (const element of rows) {
+            const bname = $(element).find('tr td a.list').text().trim();
+            branches.push(bname);
+        }
+
+        // console.log(branches)
+        return res.status(200).json({ success: true, branches });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error })
+    }
+}
+
+export const getRepoRawData = async (req, res) => {
+    console.log("getRepoRawData function call")
+    let { link } = req.query
+    console.log(link)
+    console.log(req.query)
+
+    try {
+        link = link.replace("blob", "blob_plain")
+        const { data } = await axios.get(`http://${process.env.GIT_SERVER_IP}${link}`)
+        console.log(data)
+
+        return res.status(200).json({ success: true, fileData: data })
+    } catch (error) {
+        console.log(error.message)
+        return res.status(400).json({ success: false, message: error.message })
+    }
+
+}
+
+export const getReposPermission = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select("username");
+        const { reponame } = req.query;
+
+        const repo = await Repo.findOne({ owner: user.username, name: reponame }).select("permissions");
+
+        res.status(200).json({ success: true, permissions: repo.permissions });
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const updateRepoPermission = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select("username");
+        const { reponame, permission, type, updatedPermission } = req.body;
+        const repo = await Repo.findOne({
+            owner: user.username,
+            name: reponame,
+        }).select("permissions");
+        // console.log(user, reponame, permission, repo);
+
+        let repoPermissions = repo.permissions;
+        if (type == "add") {
+            // console.log(JSON.stringify(repoPermissions).includes(JSON.stringify(permission)))
+            if (JSON.stringify(repoPermissions).includes(JSON.stringify(permission))) return res.status(400).json({ success: false, message: "Permission is already exit" })
+            // await Repo.updateOne({ owner: user.username, name: reponame }, { $push: { permissions: permission } }, { new: true });
+            repoPermissions.push(permission)
+
+            // console.log(perm.permissions)
+            // return res.status(200).json({ success: true, repoPermissions })
+        } else if (type == "update") {
+            if (!JSON.stringify(repoPermissions).includes(JSON.stringify(permission))) return res.status(400).json({ success: false, message: "Permission is not exit" })
+
+            repoPermissions = repoPermissions.map(element => {
+                if (JSON.stringify(element) === JSON.stringify(permission)) {
+                    return updatedPermission
+                }
+                return element
+            })
+
+            // return res.status(200).json({ success: true, repoPermissions })
+        } else if ("delete") {
+            if (!JSON.stringify(repoPermissions).includes(JSON.stringify(permission))) return res.status(400).json({ success: false, message: "Permission is not exit" })
+
+            repoPermissions = repoPermissions.filter(element => {
+                if (JSON.stringify(element) === JSON.stringify(permission)) {
+                    return;
+                }
+                return element
+            })
+
+            // return res.status(200).json({ success: true, repoPermissions })
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid update operation" })
+        }
+
+        const repoName = `${user.username}/${reponame}`
+        const formattedPermissions = convertPermissionsToGitoliteFormat(repoPermissions);
+        updateGitoliteConf(repoName, formattedPermissions)
+
+        const commitMessage = `create repo ${repoName}`;
+        await saveAndPushGitoliteAdmin(commitMessage)
+
+        await Repo.updateOne({ owner: user.username, name: reponame }, { permissions: repoPermissions });
+
+        return res.status(200).json({ success: true, message: "Successfully updated permissions" })
+    } catch (err) {
+        return res.status(400).json({ success: false, message: err.message })
+    }
+}
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select("username");
+
+        const allUsers = users.map(element => { return { value: element.username, label: element.username } });
+        return res.status(200).json({ success: true, allUsers });
+    } catch (err) {
+        return res.status(400).json({ success: false, message: err.message });
+    }
+}
+
+export const getRepoMember = async (req, res) => {
+    try {
+        const { username, reponame } = req.query;
+
+        const repo = await Repo.findOne({ owner: username, name: reponame }).select("permissions");
+
+        res.status(200).json({ success: true, permissions: repo.permissions });
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const getRepoType = async (req, res) => {
+    try {
+        const { username, reponame } = req.query;
+
+        const repo = await Repo.findOne({ owner: username, name: reponame }).select("type");
+        res.status(200).json({ success: true, repoType: repo.type });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message })
+    }
+}
+
+export const changeRepoVisibility = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select("username");
+        const { reponame, repotype } = req.body;
+
+        await Repo.updateOne({ owner: user.username, name: reponame }, { type: repotype == "Public" ? "Private" : "Public" });
+
+        res.status(200).json({ success: true })
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message })
     }
 }
