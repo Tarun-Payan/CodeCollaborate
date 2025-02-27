@@ -180,7 +180,7 @@ const RepoPermissionModal = ({ closeModal, permission, type }) => {
                         <p className='my-2 text-xs text-red-500'>{error}</p>
 
                         <div className='mt-2 m-auto w-fit'>
-                            <Button variant="outlined" size="small" onClick={handlePermission} disabled={!pickedUser ? true : false}>Add</Button>
+                            <Button variant="outlined" size="small" onClick={handlePermission} disabled={!pickedUser ? true : false}>{type == "add" ? "Add" : "Update"}</Button>
                         </div>
                     </div>
                 </div>

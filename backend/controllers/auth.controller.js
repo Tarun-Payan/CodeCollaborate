@@ -184,7 +184,7 @@ export const resetPassword = async (req, res) => {
         });
 
         if (!user) {
-            res.status(400).json({ success: false, message: "Invalid reset password token or expired" })
+            return res.status(400).json({ success: false, message: "Invalid reset password token or expired" })
         }
 
         const hashedPassword = await bycript.hash(newPassword, 10);
