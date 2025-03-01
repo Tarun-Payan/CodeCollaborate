@@ -44,7 +44,7 @@ const RepoPage = () => {
     const { checkAuth, setSelectedUser, editorValue, editorLanguage, editorFilePath, authUser, selectedUser } = useAuthStore();
 
     useEffect(() => {
-        checkAuth(setIsLoading, navigate, '', '/signup')
+        checkAuth(setIsLoading, navigate, '', '/landingpage')
     }, [checkAuth, navigate])
 
     useEffect(() => {

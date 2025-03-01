@@ -43,7 +43,7 @@ const Home = () => {
   }, [setSelectedUser, username])
 
   useEffect(() => {
-    checkAuth(setIsLoading, navigate, `${location.pathname}${location.search}`, '/signup')
+    checkAuth(setIsLoading, navigate, `${location.pathname}${location.search}`, '/landingpage')
   }, [checkAuth, navigate])
 
   useEffect(() => {

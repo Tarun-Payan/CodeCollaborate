@@ -8,7 +8,7 @@ const LoginSignupNavbar = ({ type }) => {
     return (
         <div className='max-w-[1200px] m-auto py-2 flex justify-between items-center'>
             <div className="logo">
-                <a href={"/"}><img src={logo} alt="Logo" className="logo w-[35px] h-[35px] rounded-full" /></a>
+                <Link to="/landingpage"><img src={logo} alt="Logo" className="logo w-[35px] h-[35px] rounded-full" /></Link>
             </div>
             <div className='text-slate-400'>
                 {type === 'login' ? 
