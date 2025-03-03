@@ -376,10 +376,10 @@ export const getReposData = async (req, res) => {
             // return all public repos, and return private repos only if user has access to them
             repos = allRepos.filter(repo => {
                 if(repo.type == "Private"){
-                    return repo.permissions.some(perm => perm.username == suser)
+                    return repo.permissions.some(perm => perm.username == user.username)
+                } else {
+                    return true
                 }
-                
-                return true
             });
 
             // return repos without permissions
