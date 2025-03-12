@@ -7,6 +7,8 @@ import ResetPassword from "./pages/ResetPassword"
 import PageNotFound from "./pages/PageNotFound"
 import RepoPage from "./pages/RepoPage"
 import LandingPage from "./pages/LandingPage"
+import About from "./pages/About"
+import ConnectViaSSH from "./pages/ConnectViaSSH"
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/:username/:reponame" element={<RepoPage />} />
+      <Route path="/doc/about" element={<About />} />
+      <Route path="/doc/ssh" element={<ConnectViaSSH />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   )

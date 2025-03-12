@@ -4,6 +4,7 @@ import { motion } from "motion/react"
 import axios from "axios"
 import ReactLoading from 'react-loading';
 import { Loader } from 'lucide-react'
+import { Link } from "react-router-dom";
 
 const ProfileSettings = () => {
   const [sshKey, setSshKey] = useState('')
@@ -104,6 +105,8 @@ const ProfileSettings = () => {
           <p className="text-sm text-gray-600">{sshKey != '' ? sshKey : 'No SSH key added'}</p>
         }
       </div>
+
+      <p className="px-2 text-xs text-gray-600">Check out our guide to <Link to={'/doc/ssh'} className="text-blue-600 underline">connecting to Code Collaborate using SSH keys.</Link></p>
     </>
   )
 }

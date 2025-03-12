@@ -154,15 +154,15 @@ export const pricingOptions = [
 ];
 
 export const resourcesLinks = [
-  { href: "#", text: "Getting Started" },
-  { href: "#", text: "Documentation" },
+  { href: "/signup", text: "Getting Started" },
+  { href: "/doc/about", text: "Documentation" },
   // { href: "#", text: "Tutorials" },
   // { href: "#", text: "API Reference" },
   // { href: "#", text: "Community Forums" },
 ];
 
 export const platformLinks = [
-  { href: "#", text: "Features" },
+  { href: "/doc/about", text: "Features" },
   { href: "#", text: "Supported Devices" },
   { href: "#", text: "System Requirements" },
   // { href: "#", text: "Downloads" },
@@ -170,7 +170,7 @@ export const platformLinks = [
 ];
 
 export const communityLinks = [
-  { href: "#", text: "Events" },
+  { href: "https://github.com/Tarun-Payan/CodeCollaborate", text: "GitHub" },
   // { href: "#", text: "Meetups" },
   // { href: "#", text: "Conferences" },
   // { href: "#", text: "Hackathons" },

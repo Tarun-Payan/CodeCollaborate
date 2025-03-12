@@ -78,8 +78,10 @@ const Home = () => {
       >
         <Navbar isRepoPage={false}/>
         
-        <div className="max-w-[1200px] m-auto p-5 flex">
-          <ProfileComponent />
+        <div className="max-w-[1200px] m-auto p-5 flex max-[560px]:flex-col">
+          <div className="max-[560px]:m-auto">
+            <ProfileComponent />
+          </div>
 
           <div className="w-full">
             {tab == "repositires" && <Repositories />}

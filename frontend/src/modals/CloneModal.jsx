@@ -6,6 +6,8 @@ import { X, Copy, Check } from 'lucide-react'
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
+import { Link } from 'react-router-dom';
+
 const CloneModal = ({ closeModal, username, reponame }) => {
     const [isCopied, setIsCopied] = useState(false)
     const cloneUrl = `git@${import.meta.env.VITE_GIT_SERVER_DOMAIN}:${username}/${reponame}.git`
@@ -52,6 +54,8 @@ const CloneModal = ({ closeModal, username, reponame }) => {
                     </Tooltip>
                 }
             </div>
+
+            <p className="px-3 text-xs text-gray-600">Check out our guide to <Link to="/doc/ssh" className="text-blue-600 underline">clone repository to Local PC.</Link></p>
         </OuterModal>
     )
 }

@@ -34,7 +34,7 @@ const ProfileShowReposComponent = () => {
 
 
       {Repositories?.repos?.length > 0 ?
-        <div className='grid gap-3 grid-cols-2'>
+        <div className='grid gap-3 md:grid-cols-2 grid-cols-1'>
           {Repositories?.repos.map(repo => {
               if(repo.type == "Public" && repo.pin) return <RepoCard key={repo._id} repo={repo} />
             }

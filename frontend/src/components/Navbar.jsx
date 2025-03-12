@@ -60,11 +60,13 @@ const Navbar = ({ isRepoPage }) => {
                     <NavbarLink NavValue="Repositories" navlink={`/${selectedUser?.username}?tab=repositires`} />
                     {authUser?.username == selectedUser?.username && <NavbarLink NavValue="Settings" navlink={`/${selectedUser?.username}?tab=settings`} />}
                     {/* <NavbarLink NavValue="Messages" navlink="/messages" /> */}
+                    <NavbarLink NavValue="Documentation" navlink={`/doc/about`} />
                 </div>
                 :
                 <div className="px-2 text-sm flex gap-2">
                     <NavbarLink NavValue="Code" navlink={`/${username}/${reponame}`} />
                     {authUser?.username == selectedUser?.username && <NavbarLink NavValue="Settings" navlink={`/${username}/${reponame}?tab=settings`} />}
+                    <NavbarLink NavValue="Documentation" navlink={`/doc/about`} />
                 </div>
                 }
             </nav>

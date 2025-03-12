@@ -56,7 +56,7 @@ const Repositories = () => {
   return (
     <div>
       <div className="Header flex justify-between mb-2">
-        <input type="text" placeholder="Find a repository..." className="border-[1px] border-gray-400 outline-none focus:border-blue-400 rounded-md px-3 text-sm py-[2px]" onChange={handleSearch} />
+        <input type="text" placeholder="Find a repository..." className="border-[1px] border-gray-400 outline-none focus:border-blue-400 rounded-md px-3 text-sm py-[2px] max-[630px]:w-full mr-1" onChange={handleSearch} />
         {selectedUser?.username == authUser?.username && <motion.button
           className="bg-blue-400 text-white rounded-md px-2 py-[2px] hover:bg-blue-500 flex items-center gap-1"
           whileHover={{

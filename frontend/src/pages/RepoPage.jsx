@@ -15,7 +15,7 @@ import ReactLoading from 'react-loading'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 import { Files } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 
@@ -41,7 +41,7 @@ const RepoPage = () => {
 
     const nav = useRef()
 
-    const { checkAuth, setSelectedUser, editorValue, editorLanguage, editorFilePath, authUser, selectedUser } = useAuthStore();
+    const { checkAuth, setSelectedUser, editorValue, setEditorValue, setEditorLanguage, setEditorFilePath, editorLanguage, editorFilePath, authUser, selectedUser } = useAuthStore();
 
     useEffect(() => {
         checkAuth(setIsLoading, navigate, '', '/landingpage')
@@ -126,6 +126,12 @@ const RepoPage = () => {
         }
     }
 
+    const handleCloseOpenedFile = async () => {
+        setEditorValue("");
+        setEditorLanguage("");
+        setEditorFilePath("");
+    }
+
     if (!isValidUsername && username) return <PageNotFound />
 
     if (repotype === 'Private' && !repoMembers.includes(selectedUser?.username) && repoMembers.length > 0) return <PageNotFound />
@@ -156,8 +162,8 @@ const RepoPage = () => {
                         <RepoSettings reponame={reponame} repotype={repotype} setRepotype={setRepotype}/>
                     </div>
                     :
-                    <div className={`max-w-[1200px] h-[calc(100vh_-_${nav.current?.clientHeight}px)] h-[calc(100vh_-_69px)] mx-auto py-5 flex gap-2`}>
-                        <div className='w-[300px] max-h-full overflow-y-auto'>
+                    <div className={`max-w-[1200px] h-[calc(100vh_-_${nav.current?.clientHeight}px)] h-[calc(100vh_-_69px)] mx-auto py-5 flex gap-2 max-[530px]:flex-col max-[530px]:h-fit`}>
+                        <div className='w-[300px] max-h-full max-[530px]:max-h-[70vh] max-[530px]:m-auto overflow-y-auto'>
                             <div className='flex items-center justify-between gap-2'>
                                 <h1 className='flex items-center font-semibold gap-1'><Files size={18} strokeWidth={2} />Files</h1>
                                 <div className='flex'>
@@ -187,9 +193,10 @@ const RepoPage = () => {
                                 : repoTree.length > 0 ? <FileTree className="w-full" repoTree={repoTree} /> : <div className='text-center text-gray-400 text-sm'>No files found</div>}
                         </div>
 
-                        <div className="bg-slate-300 flex flex-col w-full">
-                            <div className='ml-2'>
-                                &gt;{editorFilePath}
+                        <div className="bg-slate-300 flex flex-col w-full max-[530px]:h-[70vh]">
+                            <div className='ml-2 flex justify-between'>
+                                <span>&gt;{editorFilePath}</span>
+                                {editorValue != '' && <X className='px-1 cursor-pointer' onClick={handleCloseOpenedFile} />}
                             </div>
 
                             {editorValue == '' ?

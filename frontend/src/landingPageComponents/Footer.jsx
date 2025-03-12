@@ -33,13 +33,14 @@ const Footer = () => {
             ))}
           </ul>
         </div>
-        {/* <div>
-          <h3 className="text-md font-semibold mb-4">Community</h3>
+        <div>
+          <h3 className="text-md font-semibold mb-4 text-white">Community</h3>
           <ul className="space-y-2">
             {communityLinks.map((link, index) => (
               <li key={index}>
                 <a
                   href={link.href}
+                  target="_blank"
                   className="text-neutral-300 hover:text-white"
                 >
                   {link.text}
@@ -47,7 +48,7 @@ const Footer = () => {
               </li>
             ))}
           </ul>
-        </div> */}
+        </div>
       </div>
     </footer>
   );
