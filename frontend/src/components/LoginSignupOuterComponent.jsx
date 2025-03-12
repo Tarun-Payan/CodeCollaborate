@@ -21,7 +21,7 @@ const LoginSignupOuterComponent = ({children, isLoading, type}) => {
             transition={{ duration: 0.5 }}
         >
             <LoginSignupNavbar type={type} />
-            <div className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+            <div className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] min-[540px]:w-[500px] w-[95%]">
                 {children}
             </div>
         </motion.div>
