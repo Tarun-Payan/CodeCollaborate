@@ -37,7 +37,7 @@ const Navbar = () => {
               Create an account
             </Link>
           </div>
-          <div className="lg:hidden md:flex flex-col justify-end">
+          <div className="lg:hidden md:flex flex-col justify-end text-white">
             <button onClick={toggleNavbar}>
               {mobileDrawerOpen ? <X /> : <Menu />}
             </button>
@@ -53,7 +53,7 @@ const Navbar = () => {
               ))}
             </ul> */}
             <div className="flex space-x-6">
-              <Link to="/login" className="py-2 px-3 border rounded-md">
+              <Link to="/login" className="py-2 px-3 border rounded-md text-white">
                 Sign In
               </Link>
               <Link

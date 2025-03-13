@@ -225,7 +225,7 @@ const SignupPage = () => {
                                     className="div py-4 w-full"
                                     style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' }}>
                                     <ReCAPTCHA
-                                        sitekey="6Ld0XfMqAAAAAKvwViHzlOF4lFJAkdHX2FIto_5o"
+                                        sitekey={import.meta.env.VITE_GOOGLE_RECATPHA_KEY}
                                         onChange={val => handleSubmit(val)}
                                     />
                                 </motion.div>}

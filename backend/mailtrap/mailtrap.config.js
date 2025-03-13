@@ -8,8 +8,8 @@ export const client = new MailtrapClient({
 });
 
 export const sender = {
-  email: "hello@demomailtrap.com",
-  name: "CodeCollaborate Test",
+  email: "hello@codecollaborate.site",
+  name: "Code Collaborate",
 };
 
 // const recipients = [

@@ -5,11 +5,19 @@ import { sendEmailVarificationEmail, sendPasswordResetEmail, sendPasswordResetSu
 import { TempUser } from "../model/tempUser.model.js";
 import crypto from "crypto";
 import { getFileUrl, uploadObjectUrl, deleteS3BucketObject } from "../aws/awsFunctions.js";
+import { runCommandOnGitServer } from '../aws/awsFunctions.js';
 
 export const signup = async (req, res) => {
     try {
         const { email, password, username } = req.body;
         const hashedPassword = await bycript.hash(password, 10)
+
+        const commandsToCreateNewUserFolderOnGitServer = [
+            `sudo su - git <<EOF`,
+            `cd /home/git/repositories/`,
+            `mkdir -p ${username}`,
+            `EOF`,
+        ]
 
         // Check user is varified or not
         const varifyUser = await TempUser.findOne({ email, isVarified: true })
@@ -39,6 +47,9 @@ export const signup = async (req, res) => {
 
         // send welcome email
         await sendWelcomeEmail(email, "CodeCollaborate", username, `${process.env.CLIENT_URL}/`)
+
+        // create new user folder on git server
+        const response = await runCommandOnGitServer(commandsToCreateNewUserFolderOnGitServer);
 
         // generate new token
         const token = generateJWTToken(res, user._id)
