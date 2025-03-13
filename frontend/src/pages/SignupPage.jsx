@@ -9,6 +9,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore";
 import LoginSignupOuterComponent from "../components/LoginSignupOuterComponent";
 import LoginSignupInnerComponent from "../components/LoginSignupInnerComponent";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const SignupPage = () => {
     const welcomeTest = `Welcome to CodeCollaborate!\nLet’s begin the adventure`
@@ -20,6 +21,7 @@ const SignupPage = () => {
     const [password, setPassword] = useState({ data: '', isValid: false, isSubmited: false, showPassword: false })
     const [username, setUsername] = useState({ data: '', isValid: false, isSubmited: false })
     const [isLoading, setIsLoading] = useState(false)
+    const [captVal, setCaptVal] = useState(null)
 
     const { setAuthUser, setIsAuthenticated, checkAuth } = useAuthStore();
 
@@ -37,7 +39,7 @@ const SignupPage = () => {
 
     useEffect(() => {
         checkAuth(setIsLoading, navigate, '/', '')
-                
+
         displayWelcomeTest();
     }, [checkAuth, navigate])
 
@@ -124,16 +126,18 @@ const SignupPage = () => {
         setUsername({ data: e.target.value, isValid: username.isValid, isSubmited: username.isSubmited })
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (catpcValue) => {
         setIsLoading(true)
         try {
             await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/sendVarificationEmail`, { email: email.data })
             setUsername({ data: username.data, isValid: username.isValid, isSubmited: true })
+            setCaptVal(catpcValue)
         } catch (error) {
             console.log(error)
             alert('Please enter valid Email')
             setEmail({ data: email.data, isValid: false, isSubmited: false })
             setPassword({ data: password.data, isValid: password.isValid, isSubmited: false, showPassword: false })
+            setUsername({ data: username.data, isValid: username.isValid, isSubmited: false })
             seterror('Invalid email or it not exist')
         } finally {
             setIsLoading(false)
@@ -143,7 +147,7 @@ const SignupPage = () => {
     return (
         <>
             <LoginSignupOuterComponent isLoading={isLoading} type={"signup"}>
-                {!username.isSubmited ?
+                {!captVal ?
                     <>
                         <LoginSignupInnerComponent className="py-3 px-4">
                             <p
@@ -211,8 +215,20 @@ const SignupPage = () => {
                                             : <Check size={16} strokeWidth={3} className="text-green-800" />}
                                         <input type="text" className="bg-transparent px-1 rounded-[4px] border-sky-800 focus:border outline-none w-full" value={username.data} onChange={(e) => handleChangeUsername(e)} />
                                     </div>
-                                    <button className={`px-2 rounded-[4px] border  ${username.isValid ? 'border-green-800 text-green-800' : 'border-gray-600 text-gray-600 '}`} onClick={() => handleSubmit()} disabled={!username.isValid}>Continue</button>
+                                    {!username.isSubmited && <button className={`px-2 rounded-[4px] border  ${username.isValid ? 'border-green-800 text-green-800' : 'border-gray-600 text-gray-600 '}`} onClick={() => setUsername({ data: username.data, isValid: username.isValid, isSubmited: true })} disabled={!username.isValid}>Continue</button>}
+                                    {/* <button className={`px-2 rounded-[4px] border  ${username.isValid ? 'border-green-800 text-green-800' : 'border-gray-600 text-gray-600 '}`} onClick={() => handleSubmit()} disabled={!username.isValid}>Continue</button> */}
                                 </div>
+
+                                {username.isSubmited && <motion.div
+                                    initial={{ opacity: 0, y: 20 }} // Starting animation
+                                    animate={{ opacity: 1, y: 0 }}   // While in view
+                                    className="div py-4 w-full"
+                                    style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' }}>
+                                    <ReCAPTCHA
+                                        sitekey="6Ld0XfMqAAAAAKvwViHzlOF4lFJAkdHX2FIto_5o"
+                                        onChange={val => handleSubmit(val)}
+                                    />
+                                </motion.div>}
                             </motion.div>}
                         </LoginSignupInnerComponent>
 
