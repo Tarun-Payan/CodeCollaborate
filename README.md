@@ -27,10 +27,6 @@ Code-Collaborate is a modern web platform designed to simplify version control a
 - Use Gitolite to manage permissions for collaborators.
 - Users can upload their PC’s public SSH key for secure cloning and pushing.
 
-### In-Browser Code Editing
-
-- Edit repository files directly within the platform for quick updates and collaboration.
-
 ## Technology Stack
 
 ### Frontend
@@ -108,7 +104,6 @@ Code-Collaborate is a modern web platform designed to simplify version control a
 2. **Create Repositories**: Set up public or private repositories.
 3. **Manage Collaborators**: Grant permissions at repository or branch level.
 4. **Collaborate**: Clone repositories, push updates, and chat in real-time.
-5. **Edit Online**: Modify repository files directly on the platform.
 
 ## Contributing
 
